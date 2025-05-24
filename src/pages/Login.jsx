@@ -1,14 +1,19 @@
+
 import React, { useState } from 'react';
 import { FaUser, FaLock, FaWarehouse, FaEye, FaEyeSlash } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
+import { loginUser } from '../api/auth'; 
+import withoutAuth from '../hoc/withoutAuth';
 
-export default function Login() {
+ function Login() {
   const [credentials, setCredentials] = useState({
-    username: '',
+    email: '',
     password: ''
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -22,24 +27,17 @@ export default function Login() {
     e.preventDefault();
     setError('');
     setLoading(true);
-    
+
     try {
-      // Replace with your actual authentication logic
-      console.log('Login attempt with:', credentials);
-      
-      // Simulate API call
-      setTimeout(() => {
-        if (credentials.username === 'admin' && credentials.password === 'password') {
-          // Successful login - redirect to dashboard or home
-          window.location.href = '/dashboard';
-        } else {
-          setError('Invalid username or password');
-        }
-        setLoading(false);
-      }, 1000);
-      
+      const responseData = await loginUser(credentials);
+      console.log('Login successful:', responseData);
+      const authToken = responseData.data.token;
+      sessionStorage.setItem('authToken', authToken);
+      navigate('/dashboard');
     } catch (err) {
-      setError('Login failed. Please try again.');
+      setError(err.message || 'Login failed. Please try again.');
+      console.error('Login error:', err);
+    } finally {
       setLoading(false);
     }
   };
@@ -62,7 +60,7 @@ export default function Login() {
           <div className="bg-gradient-to-r from-indigo-600 to-blue-500 p-3 rounded-full mb-4 shadow-lg transform transition-all duration-300 hover:scale-110">
             <FaWarehouse className="h-8 w-8 text-white" />
           </div>
-          <h1 className="text-center text-3xl font-bold text-gray-900">Inventory Management</h1>
+          <h1 className="text-center text-3xl font-bold text-gray-900">WMS</h1>
           <h2 className="mt-3 text-center text-lg font-medium text-gray-600">Welcome back</h2>
         </div>
         
@@ -79,13 +77,13 @@ export default function Login() {
                 <FaUser className="h-5 w-5 text-gray-400 group-hover:text-indigo-500 transition-colors duration-200" />
               </div>
               <input
-                id="username"
-                name="username"
+                id="email"
+                name="email"
                 type="text"
                 required
                 className="appearance-none block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-200 ease-in-out sm:text-sm hover:border-indigo-300"
-                placeholder="Username"
-                value={credentials.username}
+                placeholder="Email"
+                value={credentials.email}
                 onChange={handleChange}
               />
             </div>
@@ -173,4 +171,4 @@ export default function Login() {
     </div>
   );
 }
-
+export default withoutAuth(Login);

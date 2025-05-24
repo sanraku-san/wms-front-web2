@@ -8,34 +8,14 @@ import {
   FaBars,
   FaTimes,
   FaHistory,
-<<<<<<< Updated upstream
-} from "react-icons/fa";
-=======
   FaBox,
   FaChartPie,
   FaPlusSquare,
 } from "react-icons/fa"; 
->>>>>>> Stashed changes
 
 // Layout component with sidebar and outlet for nested routes
 function AppLayout({ sidebarOpen, toggleSidebar, setIsLoggedIn }) {
   const location = useLocation();
-<<<<<<< Updated upstream
-
-  // Navigation items
-  const navItems = [
-    { name: "Dashboard", icon: <FaChartBar />, path: "/dashboard" },
-    { name: "Inventory", icon: <FaBoxes />, path: "/inventory" },
-    { name: "Store", icon: <FaWarehouse />, path: "/store" },
-    { name: "Transactions", icon: <FaClipboardList />, path: "/transactions" },
-    {
-      name: "Transaction History",
-      icon: <FaHistory />,
-      path: "/transactionHistory",
-    },
-    { name: "Accounts", icon: <FaUsers />, path: "/accounts" },
-  ];
-=======
   const [loading, setLoading] = useState(false);
 
   // Navigation items
@@ -45,7 +25,6 @@ function AppLayout({ sidebarOpen, toggleSidebar, setIsLoggedIn }) {
         { name: 'Store', icon: <FaWarehouse />, path: '/store' },
         { name: 'Admin Panel', icon: <FaUsers />, path: '/adminpanel' },
       ];
->>>>>>> Stashed changes
 
       const transactionItems = [
         { name: 'Create Order', icon: <FaPlusSquare />, path: '/createOrder' },
@@ -67,41 +46,6 @@ function AppLayout({ sidebarOpen, toggleSidebar, setIsLoggedIn }) {
               sidebarOpen ? "w-65" : "w-20"
             } bg-gradient-to-b from-slate-800 to-slate-900 text-white transition-all duration-300 ease-in-out fixed h-screen z-30 shadow-xl`}
           >
-<<<<<<< Updated upstream
-            <button
-              className="flex items-center w-full text-gray-300 hover:text-white transition-colors duration-200"
-              onClick={() => setIsLoggedIn(false)}
-            >
-              {sidebarOpen ? (
-                <>
-                  <div className="flex items-center">
-                    <div className="p-2 bg-red-500/10 rounded-lg">
-                      <FaSignOutAlt className="text-red-400" />
-                    </div>
-                    <span className="ml-3 text-sm">Logout</span>
-                  </div>
-                  <div className="ml-auto bg-slate-700/30 p-1 rounded">
-                    <svg
-                      className="h-4 w-4"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M14 5l7 7m0 0l-7 7m7-7H3"
-                      />
-                    </svg>
-                  </div>
-                </>
-              ) : (
-                <div className="flex justify-center w-full">
-                  <div className="p-1 bg-red-500/10 rounded-lg">
-                    <FaSignOutAlt className="text-red-400 h-4 w-4" />
-                  </div>
-=======
             {/* Logo and toggle */}
             <div className="flex items-center justify-between p-3 border-b border-slate-700/50">
               <div
@@ -111,7 +55,6 @@ function AppLayout({ sidebarOpen, toggleSidebar, setIsLoggedIn }) {
               >
                 <div className="bg-gradient-to-r from-indigo-500 to-purple-600 p-2 rounded-lg shadow-lg">
                   <FaWarehouse className="h-4 w-4 text-white" />
->>>>>>> Stashed changes
                 </div>
                 {sidebarOpen && (
                   <span className="ml-3 text-md font-bold bg-gradient-to-r from-white to-gray-300 text-transparent bg-clip-text">
@@ -272,22 +215,8 @@ function AppLayout({ sidebarOpen, toggleSidebar, setIsLoggedIn }) {
             </div>
           </div>
         </div>
-<<<<<<< Updated upstream
-      </div>
-
-      {/* Main content - with left margin to accommodate sidebar */}
-      <div className={`flex-1 ${sidebarOpen ? 'ml-72' : 'ml-20'} transition-all duration-300 ease-in-out`}>
-        <div className="bg-yellow-900 min-h-screen">
-          {/* Content goes here */}
-        </div>
-      </div>
-    </div>
-  );
-}
-=======
       );
     }
->>>>>>> Stashed changes
 
 export default function Sidebar() {
   const [sidebarOpen, setSidebarOpen] = useState(true);

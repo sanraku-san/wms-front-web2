@@ -6,21 +6,16 @@ import App from "./App.jsx";
 import Login from "./pages/Login.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import Inventory from "./pages/Inventory.jsx";
-import Settings from "./pages/Settings.jsx";
 import TransactionHistory from "./pages/TransactionHistory.jsx";
 import ProductOrders from "./pages/ProductOrders.jsx";
 import Store from "./pages/Store.jsx";
-<<<<<<< Updated upstream
-import Accounts from "./pages/Accounts.jsx";
-=======
-import Reports from "./pages/Reports.jsx";
 import CreateOrder from "./pages/CreateOrder.jsx";
 import AdminPanel from "./pages/AdminPanel.jsx";
->>>>>>> Stashed changes
 import About from "./pages/About.jsx";
 import InventoryReport from "./pages/InventoryReport.jsx";
 import DeliveryReport from "./pages/DeliveryReport.jsx";
 import InboundReport from "./pages/InboundReport.jsx";
+import Profile from "./pages/Profile.jsx";
 
 const router = createBrowserRouter([
   {
@@ -56,12 +51,12 @@ const router = createBrowserRouter([
         element: <TransactionHistory />,
       },
       {
-        path: "/accounts",
-        element: <Accounts />,
+        path: "/adminpanel",
+        element: <AdminPanel />,
       },
       {
-        path: "/settings",
-        element: <Settings />,
+        path: "/profile",
+        element: <Profile />,
       },
       {
         path: "/reports/inventory",

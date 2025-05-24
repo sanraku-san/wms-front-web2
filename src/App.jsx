@@ -1,15 +1,40 @@
-import React from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Sidebar from "./components/Sidebar";
 import { Outlet, useLocation } from "react-router-dom";
 import { FaSearch, FaBell, FaQuestion, FaUserCircle } from "react-icons/fa";
-
+import { useNavigate } from "react-router-dom";
+import { getUser } from "./api/auth";
 export default function App() {
   const location = useLocation();
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error,setError] =useState(null);
   const getPageTitle = () => {
-    const path = location.pathname.split('/')[1];
-    if (!path) return 'Dashboard';
+    const path = location.pathname.split("/")[1];
+    if (!path) return "Dashboard";
     return path.charAt(0).toUpperCase() + path.slice(1);
   };
+  const navigate = useNavigate();
+
+  const fetchProfile = useCallback(async () => {
+    const token = sessionStorage.getItem("authToken");
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+    try {
+      const userData = await getUser(token);
+      setUser(userData.data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [navigate]);
+
+  useEffect(() => {
+    fetchProfile();
+  }, [fetchProfile]);
 
   return (
     <div className="flex flex-row">
@@ -24,24 +49,26 @@ export default function App() {
                 {getPageTitle()}
               </h1>
             </div>
-            
+
             <div className="flex items-center space-x-4">
-              <button className="p-2 text-gray-500 hover:text-gray-700 rounded-full hover:bg-gray-100 transition-colors relative">
-                <FaBell className="h-5 w-5" />
-                <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
-              </button>
+             
               <div className="flex items-center border-l border-gray-200 pl-4 ml-2">
                 <div className="flex flex-col mr-3 text-right hidden sm:block">
-                  <span className="text-sm font-medium text-gray-700">Admin User</span>
+                  <span className="text-sm font-medium text-gray-700">
+                    {loading ? "Loading..." : user ? user.username : ""}
+                  </span>
                 </div>
-                <div className="h-9 w-9 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-md">
+                <div
+                  className="h-9 w-9 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 flex items-center justify-center hover:bg-indigo-400 text-white shadow-md"
+                  onClick={() => navigate("/profile")}
+                >
                   <FaUserCircle className="h-7 w-7" />
                 </div>
               </div>
             </div>
           </div>
         </header>
-        
+
         {/* Page Content */}
         <main className="flex-1 p-6 overflow-auto">
           <Outlet />
