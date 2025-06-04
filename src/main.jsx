@@ -13,8 +13,6 @@ import CreateOrder from "./pages/CreateOrder.jsx";
 import AdminPanel from "./pages/AdminPanel.jsx";
 import About from "./pages/About.jsx";
 import InventoryReport from "./pages/InventoryReport.jsx";
-import DeliveryReport from "./pages/DeliveryReport.jsx";
-import InboundReport from "./pages/InboundReport.jsx";
 import Profile from "./pages/Profile.jsx";
 
 const router = createBrowserRouter([
@@ -61,14 +59,6 @@ const router = createBrowserRouter([
       {
         path: "/reports/inventory",
         element: <InventoryReport />,
-      },
-      {
-        path: "/reports/delivery",
-        element: <DeliveryReport />,
-      },
-      {
-        path: "/reports/inbound",
-        element: <InboundReport />,
       },
       {
         path: "/createOrder",

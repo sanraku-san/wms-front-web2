@@ -3,7 +3,7 @@ import { URL } from "./configuration";
 
 export const getTopFourProducts = async () => {
   const authToken = sessionStorage.getItem("authToken");
-  const response = await fetch(`${URL}/transactionsTop4`, {
+  const response = await fetch(`${URL}/dashboard/topProducts`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${authToken}`,
@@ -13,6 +13,7 @@ export const getTopFourProducts = async () => {
   if (!response.ok) throw new Error("Failed to fetch top 4 products");
   return await response.json();
 };
+
 
 export const getCategoryCount = async () => {
   const authToken = sessionStorage.getItem("authToken");
@@ -29,7 +30,7 @@ export const getCategoryCount = async () => {
 
 export const getTotalStock = async () => {
   const authToken = sessionStorage.getItem("authToken");
-  const response = await fetch(`${URL}/productStocks`, {
+  const response = await fetch(`${URL}/dashboard/totalStock`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${authToken}`,
@@ -42,7 +43,7 @@ export const getTotalStock = async () => {
 
 export const getLowStockProducts = async () => {
   const authToken = sessionStorage.getItem("authToken");
-  const response = await fetch(`${URL}/productLowStocks`, {
+  const response = await fetch(`${URL}/dashboard/lowStock`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${authToken}`,
@@ -55,7 +56,7 @@ export const getLowStockProducts = async () => {
 
 export const getOutOfStockProducts = async () => {
   const authToken = sessionStorage.getItem("authToken");
-  const response = await fetch(`${URL}/productOutofStocks`, {
+  const response = await fetch(`${URL}/dashboard/outOfStock`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${authToken}`,
@@ -68,7 +69,7 @@ export const getOutOfStockProducts = async () => {
 
 export const getMonthlyReport = async () => {
   const authToken = sessionStorage.getItem("authToken");
-  const response = await fetch(`${URL}/transactionsMonthly`, {
+  const response = await fetch(`${URL}/dashboard/monthlyReport`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${authToken}`,

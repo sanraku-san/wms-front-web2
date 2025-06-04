@@ -66,12 +66,6 @@ const fetchProfile = useCallback(async () => {
       icon: <FaChartPie />,
       path: "/reports/inventory",
     },
-    {
-      name: "Delivery Report",
-      icon: <FaChartPie />,
-      path: "/reports/delivery",
-    },
-    { name: "Inbound Report", icon: <FaChartPie />, path: "/reports/inbound" },
   ];
 
   return (
