@@ -12,7 +12,7 @@ import {
   FaChartPie,
   FaPlusSquare,
 } from "react-icons/fa"; 
-import {getUser} from "../api/auth"
+import { getUser } from "../api/auth"
 // Layout component with sidebar and outlet for nested routes
 function AppLayout({ sidebarOpen, toggleSidebar, setIsLoggedIn }) {
   const [user , setUser] = useState(null)
@@ -28,7 +28,8 @@ const fetchProfile = useCallback(async () => {
     }
     try {
       const userData = await getUser(token);
-      setUser(userData.data);
+      setUser(userData.data)
+      console.log("User data fetched successfully:", userData.data);
     } catch (err) {
       setError(err.message);
     } finally {

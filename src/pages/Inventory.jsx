@@ -1,25 +1,37 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Outlet, Link } from 'react-router-dom';
-import { FaPlus, FaEdit, FaTrash, FaSearch, FaFilter, FaSortAmountDown, FaSortAmountUp, FaImage, FaUpload } from 'react-icons/fa';
-import withAuth from '../hoc/withAuth';
+import React, { useState, useEffect, useRef } from "react";
+import { Outlet, Link } from "react-router-dom";
+import {
+  FaPlus,
+  FaEdit,
+  FaTrash,
+  FaSearch,
+  FaFilter,
+  FaSortAmountDown,
+  FaSortAmountUp,
+  FaImage,
+  FaUpload,
+} from "react-icons/fa";
+import withAuth from "../hoc/withAuth";
+import { getProducts } from "../api/products";
 
 function Inventory() {
   const [sortDirection, setSortDirection] = useState("asc");
-  const [products, setProducts] = useState([
-    // Placeholder data - replace with actual data fetching
-    { id: '10310', date: '06 Aug 2020', productName: 'Laptop Pro X', sku: 'LPX-001', stock: 15, price: 1200.00, status: 'In Stock' },
-    { id: '25534', date: '01 Feb 2020', productName: 'Mechanical Keyboard', sku: 'MK-005', stock: 50, price: 95.50, status: 'In Stock' },
-    { id: '28398', date: '12 Jun 2020', productName: 'Wireless Mouse', sku: 'WM-010', stock: 0, price: 25.00, status: 'Out of Stock' },
-    { id: '56416', date: '06 Mar 2020', productName: 'USB-C Hub', sku: 'UCH-003', stock: 30, price: 40.00, status: 'In Stock' },
-    { id: '52605', date: '16 Apr 2020', productName: 'External SSD 1TB', sku: 'ESSD-1T', stock: 8, price: 150.00, status: 'Low Stock' },
-    { id: '48836', date: '13 Aug 2020', productName: 'Gaming Headset', sku: 'GH-007', stock: 22, price: 75.00, status: 'In Stock' },
-    { id: '76844', date: '22 May 2020', productName: 'Monitor 27 inch', sku: 'MON-27', stock: 5, price: 300.00, status: 'Low Stock' },
-    { id: '97226', date: '03 Jan 2020', productName: 'Webcam 1080p', sku: 'WBC-002', stock: 18, price: 60.00, status: 'In Stock' },
-    { id: '46562', date: '03 May 2020', productName: 'Ergonomic Chair', sku: 'EC-001', stock: 3, price: 250.00, status: 'Low Stock' },
-    { id: '84696', date: '09 Dec 2020', productName: 'Desk Lamp with Charger', sku: 'DLC-001', stock: 40, price: 35.00, status: 'In Stock' },
-    { id: '48563', date: '17 Sep 2020', productName: 'Portable Projector', sku: 'PP-001', stock: 7, price: 200.00, status: 'In Stock' },
-    { id: '11771', date: '06 Apr 2020', productName: 'Noise Cancelling Headphones', sku: 'NCH-001', stock: 10, price: 180.00, status: 'In Stock' },
-  ]);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setLoading(true);
+    getProducts()
+      .then((res) => {
+        setProducts(res.data.data);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error fetching products:", error);
+        toast.error("Failed to fetch products."); // Add a toast for fetch error
+        setLoading(false);
+      });
+  }, []);
 
   return (
     <div className="max-w-full mx-auto px-2 sm:px-4 lg:px-6 py-6 space-y-6 bg-gray-50 min-h-screen">
@@ -37,13 +49,13 @@ function Inventory() {
             />
           </div>
           <div className="flex gap-2">
-            <button
-              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-2"
-            >
+            <button className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-2">
               <FaFilter /> Filters
             </button>
             <button
-              onClick={() => setSortDirection(sortDirection === "asc" ? "desc" : "asc")}
+              onClick={() =>
+                setSortDirection(sortDirection === "asc" ? "desc" : "asc")
+              }
               className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-2"
             >
               {sortDirection === "asc" ? (
@@ -53,9 +65,7 @@ function Inventory() {
               )}
               Sort
             </button>
-            <button
-              className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2 shadow-sm"
-            >
+            <button className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2 shadow-sm">
               <FaPlus /> Add New Product
             </button>
           </div>
@@ -67,80 +77,136 @@ function Inventory() {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-200">
             <tr>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
+              >
                 ID
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
-                Date
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
+              >
                 Product Name
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
+              >
                 SKU
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
+              >
                 Stock
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
+              >
+                Defects
+              </th>
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
+              >
                 Price
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
+              >
                 Status
               </th>
-              <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th
+                scope="col"
+                className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
                 Actions
               </th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {products.map((product) => (
-              <tr key={product.id}>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  {product.id}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {product.date}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {product.productName}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {product.sku}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {product.stock}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  ${product.price.toFixed(2)}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm">
-                  <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                    product.status === 'In Stock' ? 'bg-green-100 text-green-800' :
-                    product.status === 'Low Stock' ? 'bg-yellow-100 text-yellow-800' :
-                    'bg-red-100 text-red-800'
-                  }`}>
-                    {product.status}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <div className="flex justify-end gap-2">
-                    <button className="text-indigo-600 hover:text-indigo-900">
-                      <FaEdit />
-                    </button>
-                    <button className="text-red-600 hover:text-red-900">
-                      <FaTrash />
-                    </button>
-                    <button className="text-gray-600 hover:text-gray-900">
-                        <FaImage /> {/* Placeholder for image icon */}
-                    </button>
-                    <button className="text-gray-600 hover:text-gray-900">
-                        <FaUpload /> {/* Placeholder for upload icon */}
-                    </button>
+            {loading ? (
+              <tr>
+                <td colSpan={8}>
+                  <div className="flex justify-center items-center h-64">
+                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
                   </div>
                 </td>
               </tr>
-            ))}
+            ) : products.length === 0 ? (
+              <tr>
+                <td colSpan={8}>
+                  <div className="flex flex-col items-center justify-center h-64">
+                    <FaSearch className="text-gray-400 text-4xl mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900">
+                      No products found
+                    </h3>
+                    <p className="text-gray-500 mt-1">
+                      Click "Add New Product" to create your first product.
+                    </p>
+                  </div>
+                </td>
+              </tr>
+            ) : (
+              products.map((product) => (
+                <tr key={product.id}>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    {product.id}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {product.name}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {product.sku}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {product.stock}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {product.flawed}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    ${product.price}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    <span
+                      className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                        product.stock === 0
+                          ? "bg-red-100 text-red-800"
+                          : product.stock <= 50
+                          ? "bg-yellow-100 text-yellow-800"
+                          : "bg-green-100 text-green-800"
+                      }`}
+                    >
+                      {product.stock === 0
+                        ? "Out of Stock"
+                        : product.stock <= 50
+                        ? "Low Stock"
+                        : "In Stock"}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <div className="flex justify-end gap-2">
+                      <button className="text-indigo-600 hover:text-indigo-900">
+                        <FaEdit />
+                      </button>
+                      <button className="text-red-600 hover:text-red-900">
+                        <FaTrash />
+                      </button>
+                      <button className="text-gray-600 hover:text-gray-900">
+                        <FaImage />
+                      </button>
+                      <button className="text-gray-600 hover:text-gray-900">
+                        <FaUpload />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>

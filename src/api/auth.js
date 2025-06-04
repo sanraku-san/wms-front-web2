@@ -56,7 +56,7 @@ export const logoutUser = async () => {
 //getting logged in user
   export const getUser = async (authToken) => {
   try {
-    const response = await fetch(`${URL}/profile`, { 
+    const response = await fetch(`${URL}/users/profile`, { 
       method: 'GET',
       headers: {
         Authorization: `Bearer ${authToken}`,
