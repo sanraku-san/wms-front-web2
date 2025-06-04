@@ -112,7 +112,7 @@ export default function Dashboard() {
       </div>
       
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="bg-white p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow border-l-4 border-blue-500">
           <div className="flex justify-between items-start">
             <div>
@@ -138,18 +138,6 @@ export default function Dashboard() {
           </div>
         </div>
         
-        <div className="bg-white p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow border-l-4 border-amber-500">
-          <div className="flex justify-between items-start">
-            <div>
-              <p className="text-sm font-medium text-gray-500">Pending Shipments</p>
-              <p className="text-2xl font-bold text-gray-800 mt-1">12</p>
-              <p className="text-xs text-gray-500 mt-1">Est. value: {formatCurrency(42500)}</p>
-            </div>
-            <div className="p-3 bg-amber-100 rounded-lg">
-              <FaTruck className="h-6 w-6 text-amber-600" />
-            </div>
-          </div>
-        </div>
       </div>
       
       {/* Overview Section */}
@@ -159,11 +147,7 @@ export default function Dashboard() {
           Inventory Status Overview
         </h2>
         
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-gray-50 p-4 rounded-lg border border-gray-100 hover:border-indigo-200 transition-colors">
-            <p className="text-xs text-gray-500 mb-1">Total Products</p>
-            <p className="text-lg font-bold text-gray-800">{inventoryStats.totalItems}</p>
-          </div>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
           <div className="bg-gray-50 p-4 rounded-lg border border-gray-100 hover:border-indigo-200 transition-colors">
             <p className="text-xs text-gray-500 mb-1">Categories</p>
             <p className="text-lg font-bold text-gray-800">{categories.length}</p>
