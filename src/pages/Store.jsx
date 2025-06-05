@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
 import { getStores, addStores, deleteStore } from "../api/stores";
+import { getUser } from "../api/auth"; 
 import withAuth from "../hoc/withAuth";
 import StoreModal from "../components/modals/StoreModal";
 import DeleteStoreConfirmationModal from "../components/modals/DeleteStoreConfirmationModal";
@@ -10,6 +11,7 @@ import { FaSearch } from "react-icons/fa";
 function Store() {
   const [stores, setStores] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [currentUserRole, setCurrentUserRole] = useState(null);
 
   const [showStoreModal, setShowStoreModal] = useState(false);
   const [currentStore, setCurrentStore] = useState({
@@ -25,17 +27,41 @@ function Store() {
   const [storeToDeleteName, setStoreToDeleteName] = useState("");
 
   useEffect(() => {
-    setLoading(true);
-    getStores()
-      .then((res) => {
-        setStores(res.data);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.error("Error fetching stores:", error);
-        toast.error("Failed to fetch stores.");
-        setLoading(false);
-      });
+    const fetchInitialData = async () => {
+      setLoading(true);
+      const authToken = sessionStorage.getItem("authToken");
+
+      if (authToken) {
+        try {
+          const userData = await getUser(authToken);
+          if (userData && userData.data && userData.data.roles && userData.data.roles.length > 0) {
+            setCurrentUserRole(userData.data.roles[0].name);
+          } else {
+            console.warn("User data received but no role found. Defaulting to 'viewer'.", userData);
+            setCurrentUserRole('viewer');
+          }
+        } catch (error) {
+          console.error("Error fetching user role:", error);
+          toast.error("Failed to load user permissions.");
+          setCurrentUserRole('viewer'); 
+        }
+      } else {
+        setCurrentUserRole('viewer');
+      }
+
+      getStores()
+        .then((res) => {
+          setStores(res.data);
+          setLoading(false);
+        })
+        .catch((error) => {
+          console.error("Error fetching stores:", error);
+          toast.error("Failed to fetch stores.");
+          setLoading(false);
+        });
+    };
+
+    fetchInitialData();
   }, []);
 
   const handleAdd = () => {
@@ -137,6 +163,7 @@ function Store() {
         });
     }
   };
+  const isViewer = currentUserRole === 'viewer'; 
 
   return (
     <div className="max-w-full mx-auto px-2 sm:px-4 lg:px-6 py-6 space-y-6 bg-gray-50 min-h-screen">
@@ -149,12 +176,14 @@ function Store() {
             </h1>
             <p className="text-gray-500 mt-1">Manage your store locations</p>
           </div>
-          <button
-            onClick={handleAdd}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2 shadow-sm"
-          >
-            + Add Store
-          </button>
+          {!isViewer && (
+            <button
+              onClick={handleAdd}
+              className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2 shadow-sm"
+            >
+              + Add Store
+            </button>
+          )}
         </div>
       </div>
 
@@ -199,20 +228,22 @@ function Store() {
                     </p>
                   </div>
                 </div>
-                <div className="border-t border-gray-100 px-4 py-3 bg-gray-50 flex gap-2">
-                  <button
-                    onClick={() => handleEditStore(store)}
-                    className="px-3 py-1.5 bg-indigo-100 text-indigo-700 rounded-lg hover:bg-indigo-200 transition font-medium text-sm flex-1"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleDeleteClick(store.id, store.name)}
-                    className="px-3 py-1.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition font-medium text-sm flex-1"
-                  >
-                    Delete
-                  </button>
-                </div>
+                {!isViewer && (
+                  <div className="border-t border-gray-100 px-4 py-3 bg-gray-50 flex gap-2">
+                    <button
+                      onClick={() => handleEditStore(store)}
+                      className="px-3 py-1.5 bg-indigo-100 text-indigo-700 rounded-lg hover:bg-indigo-200 transition font-medium text-sm flex-1"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDeleteClick(store.id, store.name)}
+                      className="px-3 py-1.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition font-medium text-sm flex-1"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                )}
               </div>
             ))}
           </div>

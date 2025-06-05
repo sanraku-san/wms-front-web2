@@ -1,36 +1,39 @@
-// src/pages/AdminPanel.jsx
-import React, { useState, useEffect } from 'react';
-import { Outlet } from 'react-router-dom';
-import { FaPlus, FaEdit, FaTrash, FaSearch, FaFilter, FaSortAmountDown, FaSortAmountUp } from 'react-icons/fa';
-import withAuth from '../hoc/withAuth'; // Assuming you still use this HOC
-import {getUsers} from '../api/accounts';
-
+import React, { useState, useEffect } from "react";
+import { Outlet } from "react-router-dom";
+import {
+  FaPlus,
+  FaEdit,
+  FaTrash,
+  FaSearch,
+  FaFilter,
+  FaSortAmountDown,
+  FaSortAmountUp,
+} from "react-icons/fa";
+import withAuth from "../hoc/withAuth";
+import { getUsers, addAccount } from "../api/accounts";
 
 function AdminPanel() {
-  const [sortDirection, setSortDirection] = useState("asc"); // For sorting accounts
-  const [searchTerm, setSearchTerm] = useState(""); // For searching accounts
-  
-  // Placeholder data for accounts
+  const [sortDirection, setSortDirection] = useState("asc");
+  const [searchTerm, setSearchTerm] = useState("");
   const [accounts, setAccounts] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-      setLoading(true);
-      getUsers()
-        .then((res) => {
-          setAccounts(res.data);
-          setLoading(false);
-        })
-        .catch((error) => {
-          console.error("Error fetching Account:", error);
-          toast.error("Failed to fetch Account."); // Add a toast for fetch error
-          setLoading(false);
-        });
-    }, []);
-
+    setLoading(true);
+    getUsers()
+      .then((res) => {
+        setAccounts(res.data);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error fetching Account:", error);
+        toast.error("Failed to fetch Account.");
+        setLoading(false);
+      });
+  }, []);
 
   // const filteredAndSortedAccounts = accounts
-  //   .filter(account => 
+  //   .filter(account =>
   //     account.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
   //     account.email.toLowerCase().includes(searchTerm.toLowerCase())
   //   )
@@ -42,9 +45,8 @@ function AdminPanel() {
   //     return 0;
   //   });
 
-
   const handleAddAccount = () => {
-    alert("Add New Account clicked!"); 
+    alert("Add New Account clicked!");
   };
 
   const handleEditAccount = (account) => {
@@ -52,9 +54,13 @@ function AdminPanel() {
   };
 
   const handleDeleteAccount = (account) => {
-    if (window.confirm(`Are you sure you want to delete account "${account.name}"?`)) {
-      setAccounts(accounts.filter(acc => acc.id !== account.id));
-      alert(`Account "${account.name}" deleted.`); // Replace with toast notification
+    if (
+      window.confirm(
+        `Are you sure you want to delete account "${account.name}"?`
+      )
+    ) {
+      setAccounts(accounts.filter((acc) => acc.id !== account.id));
+      alert(`Account "${account.name}" deleted.`);
     }
   };
 
@@ -74,13 +80,13 @@ function AdminPanel() {
             />
           </div>
           <div className="flex gap-2">
-            <button
-              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-2"
-            >
+            <button className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-2">
               <FaFilter /> Filters
             </button>
             <button
-              onClick={() => setSortDirection(sortDirection === "asc" ? "desc" : "asc")}
+              onClick={() =>
+                setSortDirection(sortDirection === "asc" ? "desc" : "asc")
+              }
               className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-2"
             >
               {sortDirection === "asc" ? (
@@ -103,27 +109,50 @@ function AdminPanel() {
       {/* Accounts Table */}
       <div className="bg-white rounded-xl shadow-md border-gray-100 overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-200"> {/* Changed to gray-50 for consistency with Inventory's table header */}
+          <thead className="bg-gray-200">
             <tr>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
+              >
                 ID
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
+              >
                 Account Name
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
+              >
                 Email
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
+              >
                 Role
               </th>
-              <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-600 uppercase tracking-wider">
+              <th
+                scope="col"
+                className="px-6 py-3 text-right text-xs font-medium text-gray-600 uppercase tracking-wider"
+              >
                 Actions
               </th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {accounts.length > 0 ? (
+            {loading ? (
+              <tr>
+                <td colSpan={8}>
+                  <div className="flex justify-center items-center h-64">
+                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+                  </div>
+                </td>
+              </tr>
+            ) : accounts.length > 0 ? (
               accounts.map((account) => (
                 <tr key={account.id}>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
@@ -136,26 +165,30 @@ function AdminPanel() {
                     {account.email}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    {/* Dynamic styling for roles */}
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full capitalize ${
-                      account.role === 'admin' ? 'bg-red-100 text-red-800' :
-                      account.role === 'moderator' ? 'bg-yellow-100 text-yellow-800' :
-                      account.role === 'user' ? 'bg-green-100 text-green-800' :
-                      'bg-blue-100 text-blue-800' // For 'viewer' or other roles
-                    }`}>
-                      {account.role}
+                    <span
+                      className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full capitalize ${
+                        account.role === "admin"
+                          ? "bg-red-100 text-red-800"
+                          : account.role === "moderator"
+                          ? "bg-yellow-100 text-yellow-800"
+                          : account.role === "user"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-blue-100 text-blue-800"
+                      }`}
+                    >
+                      {account.roles[0]?.name}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex justify-end gap-2">
-                      <button 
+                      <button
                         onClick={() => handleEditAccount(account)}
                         className="text-indigo-600 hover:text-indigo-900"
                         title="Edit Account"
                       >
                         <FaEdit />
                       </button>
-                      <button 
+                      <button
                         onClick={() => handleDeleteAccount(account)}
                         className="text-red-600 hover:text-red-900"
                         title="Delete Account"
@@ -168,7 +201,10 @@ function AdminPanel() {
               ))
             ) : (
               <tr>
-                <td colSpan="5" className="px-6 py-4 text-center text-gray-500 text-sm">
+                <td
+                  colSpan="5"
+                  className="px-6 py-4 text-center text-gray-500 text-sm"
+                >
                   No accounts found. Try adjusting your search or filters.
                 </td>
               </tr>

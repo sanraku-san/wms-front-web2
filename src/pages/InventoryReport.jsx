@@ -1,155 +1,54 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaPlus } from "react-icons/fa";
-
-const AddVarianceModal = ({ onClose, onSave }) => {
-  const [storeId, setStoreId] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [physicalStock, setPhysicalStock] = useState("");
-  const [physicalSales, setPhysicalSales] = useState("");
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (
-      !storeId ||
-      !startDate ||
-      !endDate ||
-      physicalStock === "" ||
-      physicalSales === ""
-    ) {
-      alert("Please fill in all fields.");
-      return;
-    }
-
-    const newReport = {
-      storeId,
-      startDate,
-      endDate,
-      physicalStock: parseFloat(physicalStock),
-      physicalSales: parseFloat(physicalSales),
-    };
-    onSave(newReport);
-    setStoreId("");
-    setStartDate("");
-    setEndDate("");
-    setPhysicalStock("");
-    setPhysicalSales("");
-  };
-
-  return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-md">
-        <h2 className="text-xl font-semibold text-gray-800 mb-6 text-center">
-          Add New Variance Report
-        </h2>
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label
-              htmlFor="storeId"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Store ID:
-            </label>
-            <input
-              type="text"
-              id="storeId"
-              value={storeId}
-              onChange={(e) => setStoreId(e.target.value)}
-              required
-              className="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
-            />
-          </div>
-          <div className="mb-4">
-            <label
-              htmlFor="startDate"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Start Date:
-            </label>
-            <input
-              type="date"
-              id="startDate"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              required
-              className="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
-            />
-          </div>
-          <div className="mb-4">
-            <label
-              htmlFor="endDate"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              End Date:
-            </label>
-            <input
-              type="date"
-              id="endDate"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              required
-              className="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
-            />
-          </div>
-          <div className="mb-4">
-            <label
-              htmlFor="physicalStock"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Physical Stock:
-            </label>
-            <input
-              type="number"
-              id="physicalStock"
-              value={physicalStock}
-              onChange={(e) => setPhysicalStock(e.target.value)}
-              required
-              step="any"
-              className="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
-            />
-          </div>
-          <div className="mb-6">
-            <label
-              htmlFor="physicalSales"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Physical Sales:
-            </label>
-            <input
-              type="number"
-              id="physicalSales"
-              value={physicalSales}
-              onChange={(e) => setPhysicalSales(e.target.value)}
-              required
-              step="any"
-              className="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
-            />
-          </div>
-          <div className="flex justify-end gap-3">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium shadow-sm"
-            >
-              Add Report
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-};
+import { getReports } from "../api/variance";
+import AddVarianceModal from "../components/modals/createReport";
+import { ToastContainer,toast } from "react-toastify";
 
 const VarianceReportPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [varianceReports, setVarianceReports] = useState([]);
   const [nextId, setNextId] = useState(1);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setLoading(true);
+    getReports()
+      .then((res) => {
+        console.log("Fetched Variance Reports:", res);
+
+        const transformedReports = res.data.data.map((report) => {
+          const physicalStock = report.physical_stock || 0;
+          const physicalSales = report.physical_sales || 0;
+
+          const systemStock = physicalStock * 0.95;
+          const stockDifference = physicalStock - systemStock;
+
+          const systemSales = physicalSales * 1.05;
+          const salesDifference = physicalSales - systemSales;
+
+          return {
+            id: report.id,
+            userId: report.user_id,
+            storeId: report.store?.name,
+            startDate: report.start_date,
+            endDate: report.end_date,
+            physicalStock: report.physical_stock,
+            systemStock: systemStock.toFixed(2),
+            stockDifference: stockDifference.toFixed(2),
+            physicalSales: report.physical_sales,
+            systemSales: systemSales.toFixed(2),
+            salesDifference: salesDifference.toFixed(2),
+          };
+        });
+
+        setVarianceReports(transformedReports);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error fetching variance reports:", error);
+        setLoading(false);
+      });
+  }, []);
 
   const handleAddVariance = (newReport) => {
     const systemStock = newReport.physicalStock * 0.95;
@@ -159,11 +58,15 @@ const VarianceReportPage = () => {
     const salesDifference = newReport.physicalSales - systemSales;
 
     const reportWithCalculations = {
-      id: nextId,
-      userId: "admin",
-      ...newReport,
+      id: newReport.id || nextId,
+      userId: newReport.user_id || "admin",
+      storeId: newReport.store_id || newReport.storeId,
+      startDate: newReport.start_date || newReport.startDate,
+      endDate: newReport.end_date || newReport.endDate,
+      physicalStock: parseFloat(newReport.physicalStock).toFixed(2),
       systemStock: systemStock.toFixed(2),
       stockDifference: stockDifference.toFixed(2),
+      physicalSales: parseFloat(newReport.physicalSales).toFixed(2),
       systemSales: systemSales.toFixed(2),
       salesDifference: salesDifference.toFixed(2),
     };
@@ -172,7 +75,9 @@ const VarianceReportPage = () => {
       ...prevReports,
       reportWithCalculations,
     ]);
-    setNextId((prevId) => prevId + 1);
+    if (!newReport.id) {
+      setNextId((prevId) => prevId + 1);
+    }
     setIsModalOpen(false);
   };
 
@@ -193,7 +98,11 @@ const VarianceReportPage = () => {
       </div>
 
       <div className="bg-white rounded-xl shadow-md border-gray-100 overflow-x-auto">
-        {varianceReports.length === 0 ? (
+        {loading ? (
+          <div className="flex justify-center items-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+          </div>
+        ) : varianceReports.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-64 p-4">
             <svg
               className="text-gray-400 text-6xl mb-4"
@@ -221,131 +130,70 @@ const VarianceReportPage = () => {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-200">
               <tr>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
-                >
-                  ID
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
-                >
-                  User ID
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
-                >
-                  Store ID
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
-                >
-                  Start Date
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
-                >
-                  End Date
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
-                >
-                  Physical Stock
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
-                >
-                  System Stock
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
-                >
-                  Stock Difference
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
-                >
-                  Physical Sales
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
-                >
-                  System Sales
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
-                >
-                  Sales Difference
-                </th>
+                {[
+                  "ID",
+                  "Store",
+                  "Start Date",
+                  "End Date",
+                  "Physical Stock",
+                  "System Stock",
+                  "Stock Difference",
+                  "Physical Sales",
+                  "System Sales",
+                  "Sales Difference",
+                ].map((header) => (
+                  <th
+                    key={header}
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
+                  >
+                    {header}
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {varianceReports.map((report) => (
                 <tr key={report.id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {report.id}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {report.userId}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {report.storeId}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {report.startDate}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {report.endDate}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {report.physicalStock}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {report.systemStock}
-                  </td>
-                  <td
-                    className={`px-6 py-4 whitespace-nowrap text-sm ${
-                      parseFloat(report.stockDifference) !== 0
-                        ? "bg-yellow-100 text-yellow-800 font-semibold rounded-full px-2 inline-flex text-xs leading-5"
-                        : "text-gray-500"
-                    }`}
-                  >
-                    {report.stockDifference}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {report.physicalSales}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {report.systemSales}
-                  </td>
-                  <td
-                    className={`px-6 py-4 whitespace-nowrap text-sm ${
-                      parseFloat(report.salesDifference) !== 0
-                        ? "bg-red-100 text-red-800 font-semibold rounded-full px-2 inline-flex text-xs leading-5"
-                        : "text-gray-500"
-                    }`}
-                  >
-                    {report.salesDifference}
-                  </td>
+                  {[
+                    "id",
+                    "storeId",
+                    "startDate",
+                    "endDate",
+                    "physicalStock",
+                    "systemStock",
+                    "stockDifference",
+                    "physicalSales",
+                    "systemSales",
+                    "salesDifference",
+                  ].map((field) => (
+                    <td
+                      key={field}
+                      className={`px-6 py-4 whitespace-nowrap text-sm ${
+                        ["stockDifference", "salesDifference"].includes(
+                          field
+                        ) && parseFloat(report[field]) !== 0
+                          ? field === "stockDifference"
+                            ? "bg-yellow-100 text-yellow-800 font-semibold rounded-full px-2 inline-flex text-xs leading-5"
+                            : "bg-red-100 text-red-800 font-semibold rounded-full px-2 inline-flex text-xs leading-5"
+                          : "text-gray-500"
+                      }`}
+                    >
+                      {report[field]}
+                    </td>
+                  ))}
                 </tr>
               ))}
             </tbody>
           </table>
+
         )}
       </div>
+      <ToastContainer />
 
       {isModalOpen && (
         <AddVarianceModal
+          isOpen={() => setIsModalOpen(true)}
           onClose={() => setIsModalOpen(false)}
           onSave={handleAddVariance}
         />

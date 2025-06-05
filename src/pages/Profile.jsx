@@ -84,8 +84,6 @@ export default function Profile() {
                   <FaUser className="text-6xl sm:text-7xl" />
                 </div>
               )}
-              {/* Optional: Online status indicator */}
-              {/* <span className="absolute bottom-1 right-1 block h-4 w-4 rounded-full bg-green-500 ring-2 ring-white"></span> */}
             </div>
           </div>
         </div>
@@ -110,7 +108,7 @@ export default function Profile() {
                 <span className="font-semibold text-indigo-600">Email:</span>{' '}
                 {user.email}
               </p>
-              {user.profile?.address && ( // Changed from user.location to user.profile?.address for consistency
+              {user.profile?.address && ( 
                 <p>
                   <span className="font-semibold text-indigo-600">Location:</span>{' '}
                   {user.profile.address}

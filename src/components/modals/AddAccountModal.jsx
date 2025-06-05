@@ -20,14 +20,12 @@ function AddAccountModal({ isOpen, onClose, onSave }) {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    // Clear error for the field being edited
     setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      // Validate file type and size (8MB = 8 * 1024 * 1024 bytes)
       const validTypes = ["image/jpg", "image/jpeg", "image/png", "image/jfif", "image/webp"];
       if (!validTypes.includes(file.type)) {
         setErrors((prev) => ({ ...prev, image: "Invalid file type. Use JPG, JPEG, PNG, JFIF, or WEBP." }));
