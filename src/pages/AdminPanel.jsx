@@ -17,6 +17,8 @@ function AdminPanel() {
   const [searchTerm, setSearchTerm] = useState("");
   const [accounts, setAccounts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10; 
 
   useEffect(() => {
     setLoading(true);
@@ -31,6 +33,11 @@ function AdminPanel() {
         setLoading(false);
       });
   }, []);
+
+  const indexOfLastAccount = currentPage * itemsPerPage;
+  const indexOfFirstAccount = indexOfLastAccount - itemsPerPage;
+  const currentAccounts = accounts.slice(indexOfFirstAccount, indexOfLastAccount);
+  const totalPages = Math.ceil(accounts.length / itemsPerPage);
 
   // const filteredAndSortedAccounts = accounts
   //   .filter(account =>
@@ -66,7 +73,6 @@ function AdminPanel() {
 
   return (
     <div className="max-w-full mx-auto px-2 sm:px-4 lg:px-6 py-6 space-y-6 bg-gray-50 min-h-screen">
-      {/* Page Header with Search, Filter, Sort, and Add Button */}
       <div className="bg-white rounded-xl shadow-md p-4 sm:p-6 border border-gray-100">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div className="flex-1 relative">
@@ -106,7 +112,6 @@ function AdminPanel() {
         </div>
       </div>
 
-      {/* Accounts Table */}
       <div className="bg-white rounded-xl shadow-md border-gray-100 overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-200">
@@ -153,7 +158,7 @@ function AdminPanel() {
                 </td>
               </tr>
             ) : accounts.length > 0 ? (
-              accounts.map((account) => (
+              currentAccounts.map((account) => (
                 <tr key={account.id}>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                     {account.id}
@@ -211,6 +216,47 @@ function AdminPanel() {
             )}
           </tbody>
         </table>
+        {totalPages > 1 && (
+          <div className="flex justify-center items-center py-4 gap-2">
+            <button
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className={`px-3 py-1 rounded-lg border ${
+                currentPage === 1
+                  ? "bg-gray-200 text-gray-400"
+                  : "bg-white text-gray-700 hover:bg-gray-100"
+              }`}
+            >
+              Previous
+            </button>
+            {Array.from({ length: totalPages }, (_, i) => (
+              <button
+                key={i + 1}
+                onClick={() => setCurrentPage(i + 1)}
+                className={`px-3 py-1 rounded-lg border ${
+                  currentPage === i + 1
+                    ? "bg-indigo-600 text-white"
+                    : "bg-white text-gray-700 hover:bg-gray-100"
+                }`}
+              >
+                {i + 1}
+              </button>
+            ))}
+            <button
+              onClick={() =>
+                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+              }
+              disabled={currentPage === totalPages}
+              className={`px-3 py-1 rounded-lg border ${
+                currentPage === totalPages
+                  ? "bg-gray-200 text-gray-400"
+                  : "bg-white text-gray-700 hover:bg-gray-100"
+              }`}
+            >
+              Next
+            </button>
+          </div>
+        )}
       </div>
 
       <Outlet />

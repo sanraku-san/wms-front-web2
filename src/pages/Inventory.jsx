@@ -25,6 +25,8 @@ function Inventory() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [currentUserRole, setCurrentUserRole] = useState(null); 
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10; 
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -116,9 +118,13 @@ function Inventory() {
 
   const isViewer = currentUserRole === 'viewer';
 
+  const indexOfLastProduct = currentPage * itemsPerPage;
+  const indexOfFirstProduct = indexOfLastProduct - itemsPerPage;
+  const currentProducts = products.slice(indexOfFirstProduct, indexOfLastProduct);
+  const totalPages = Math.ceil(products.length / itemsPerPage);
+
   return (
     <div className="max-w-full mx-auto px-2 sm:px-4 lg:px-6 py-6 space-y-6 bg-gray-50 min-h-screen">
-      {/* Page Header */}
       <div className="bg-white rounded-xl shadow-md p-4 sm:p-6 border border-gray-100">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div className="flex-1 relative">
@@ -144,7 +150,6 @@ function Inventory() {
               {sortDirection === "asc" ? <FaSortAmountUp /> : <FaSortAmountDown />}
               Sort
             </button>
-            {/* Hide Add New Product button if user is viewer */}
             {!isViewer && (
               <button
                 onClick={() => setIsAddModalOpen(true)} // Open add product modal
@@ -157,7 +162,6 @@ function Inventory() {
         </div>
       </div>
 
-      {/* Product Table */}
       <div className="bg-white rounded-xl shadow-md border-gray-100 overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-200">
@@ -169,7 +173,6 @@ function Inventory() {
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Defects</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Price</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Status</th>
-              {/* Conditionally render Actions header */}
               {!isViewer && <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>}
             </tr>
           </thead>
@@ -193,7 +196,7 @@ function Inventory() {
                 </td>
               </tr>
             ) : (
-              products.map((product) => (
+              currentProducts.map((product) => (
                 <tr key={product.id}>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{product.id}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{product.name}</td>
@@ -212,12 +215,11 @@ function Inventory() {
                       {product.stock === 0 ? "Out of Stock" : product.stock <= 50 ? "Low Stock" : "In Stock"}
                     </span>
                   </td>
-                  {/* Conditionally render action buttons */}
-                  {!isViewer && ( // Only show if NOT a viewer
+                  {!isViewer && ( 
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex justify-end gap-2">
                         <button
-                          onClick={() => handleEditProduct(product)} // Open edit modal
+                          onClick={() => handleEditProduct(product)} 
                           className="text-indigo-600 hover:text-indigo-900"
                           title="Edit product"
                         >
@@ -238,17 +240,42 @@ function Inventory() {
             )}
           </tbody>
         </table>
+        {totalPages > 1 && (
+          <div className="flex justify-center items-center py-4 gap-2">
+            <button
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className={`px-3 py-1 rounded-lg border ${currentPage === 1 ? 'bg-gray-200 text-gray-400' : 'bg-white text-gray-700 hover:bg-gray-100'}`}
+            >
+              Previous
+            </button>
+            {Array.from({ length: totalPages }, (_, i) => (
+              <button
+                key={i + 1}
+                onClick={() => setCurrentPage(i + 1)}
+                className={`px-3 py-1 rounded-lg border ${currentPage === i + 1 ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'}`}
+              >
+                {i + 1}
+              </button>
+            ))}
+            <button
+              onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className={`px-3 py-1 rounded-lg border ${currentPage === totalPages ? 'bg-gray-200 text-gray-400' : 'bg-white text-gray-700 hover:bg-gray-100'}`}
+            >
+              Next
+            </button>
+          </div>
+        )}
       </div>
       <ToastContainer />
 
-      {/* Add Product Modal */}
       <AddProductModal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onAddProduct={handleAddProductSuccess}
       />
 
-      {/* Edit Product Modal */}
       <EditProductModal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
