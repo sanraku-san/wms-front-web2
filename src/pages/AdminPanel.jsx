@@ -10,7 +10,10 @@ import {
   FaSortAmountUp,
 } from "react-icons/fa";
 import withAuth from "../hoc/withAuth";
-import { getUsers, addAccount } from "../api/accounts";
+import { getUsers } from "../api/accounts";
+import AccountModal from "../components/modals/AccountModal";
+import DeleteStoreConfirmationModal from "../components/modals/DeleteStoreConfirmationModal";
+import { ToastContainer, toast } from "react-toastify";
 
 function AdminPanel() {
   const [sortDirection, setSortDirection] = useState("asc");
@@ -18,7 +21,20 @@ function AdminPanel() {
   const [accounts, setAccounts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10; 
+  const itemsPerPage = 10;
+
+  // Modal state
+  const [showAccountModal, setShowAccountModal] = useState(false);
+  const [isEdit, setIsEdit] = useState(false);
+  const [currentAccount, setCurrentAccount] = useState({
+    id: null,
+    name: "",
+    email: "",
+    role: "",
+  });
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [accountToDeleteId, setAccountToDeleteId] = useState(null);
+  const [accountToDeleteName, setAccountToDeleteName] = useState("");
 
   useEffect(() => {
     setLoading(true);
@@ -34,41 +50,99 @@ function AdminPanel() {
       });
   }, []);
 
+  // Pagination
   const indexOfLastAccount = currentPage * itemsPerPage;
   const indexOfFirstAccount = indexOfLastAccount - itemsPerPage;
   const currentAccounts = accounts.slice(indexOfFirstAccount, indexOfLastAccount);
   const totalPages = Math.ceil(accounts.length / itemsPerPage);
 
-  // const filteredAndSortedAccounts = accounts
-  //   .filter(account =>
-  //     account.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-  //     account.email.toLowerCase().includes(searchTerm.toLowerCase())
-  //   )
-  //   .sort((a, b) => {
-  //     const nameA = a.name.toLowerCase();
-  //     const nameB = b.name.toLowerCase();
-  //     if (nameA < nameB) return sortDirection === "asc" ? -1 : 1;
-  //     if (nameA > nameB) return sortDirection === "asc" ? 1 : -1;
-  //     return 0;
-  //   });
-
+  // Modal handlers
   const handleAddAccount = () => {
-    alert("Add New Account clicked!");
+    setCurrentAccount({ id: null, name: "", email: "", role: "" });
+    setIsEdit(false);
+    setShowAccountModal(true);
   };
 
   const handleEditAccount = (account) => {
-    alert(`Edit Account: ${account.name}`);
+    setCurrentAccount({
+      id: account.id,
+      name: `${account.profile?.first_name || ""} ${account.profile?.last_name || ""}`.trim(),
+      email: account.email,
+      role: account.roles?.[0]?.name || "",
+    });
+    setIsEdit(true);
+    setShowAccountModal(true);
   };
 
-  const handleDeleteAccount = (account) => {
-    if (
-      window.confirm(
-        `Are you sure you want to delete account "${account.name}"?`
-      )
-    ) {
-      setAccounts(accounts.filter((acc) => acc.id !== account.id));
-      alert(`Account "${account.name}" deleted.`);
+  const handleCloseAccountModal = () => {
+    setShowAccountModal(false);
+    setCurrentAccount({ id: null, name: "", email: "", role: "" });
+  };
+
+  const handleSaveAccount = (e) => {
+    e.preventDefault();
+    if (!currentAccount.name || !currentAccount.email || !currentAccount.role) {
+      toast.error("All fields are required.");
+      return;
     }
+    if (isEdit) {
+      setAccounts((prev) =>
+        prev.map((acc) =>
+          acc.id === currentAccount.id
+            ? {
+                ...acc,
+                email: currentAccount.email,
+                roles: [{ name: currentAccount.role }],
+                profile: {
+                  ...acc.profile,
+                  first_name: currentAccount.name.split(" ")[0] || "",
+                  last_name: currentAccount.name.split(" ").slice(1).join(" ") || "",
+                },
+              }
+            : acc
+        )
+      );
+      toast.info("Account updated successfully!");
+    } else {
+      setAccounts((prev) => [
+        ...prev,
+        {
+          id: Date.now(),
+          email: currentAccount.email,
+          roles: [{ name: currentAccount.role }],
+          profile: {
+            first_name: currentAccount.name.split(" ")[0] || "",
+            last_name: currentAccount.name.split(" ").slice(1).join(" ") || "",
+          },
+        },
+      ]);
+      toast.success("Account added successfully!");
+    }
+    setShowAccountModal(false);
+    setCurrentAccount({ id: null, name: "", email: "", role: "" });
+  };
+
+  // Delete handlers
+  const handleDeleteAccount = (account) => {
+    setAccountToDeleteId(account.id);
+    setAccountToDeleteName(
+      `${account.profile?.first_name || ""} ${account.profile?.last_name || ""}`.trim()
+    );
+    setShowDeleteModal(true);
+  };
+
+  const handleCloseDeleteModal = () => {
+    setShowDeleteModal(false);
+    setAccountToDeleteId(null);
+    setAccountToDeleteName("");
+  };
+
+  const handleConfirmDelete = () => {
+    setAccounts((prev) => prev.filter((acc) => acc.id !== accountToDeleteId));
+    toast.info("Account deleted successfully!");
+    setShowDeleteModal(false);
+    setAccountToDeleteId(null);
+    setAccountToDeleteName("");
   };
 
   return (
@@ -83,6 +157,8 @@ function AdminPanel() {
               type="text"
               placeholder="Search accounts by name or email..."
               className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
           <div className="flex gap-2">
@@ -158,52 +234,69 @@ function AdminPanel() {
                 </td>
               </tr>
             ) : accounts.length > 0 ? (
-              currentAccounts.map((account) => (
-                <tr key={account.id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {account.id}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {account.profile?.first_name} {account.profile?.last_name}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {account.email}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    <span
-                      className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full capitalize ${
-                        account.role === "admin"
-                          ? "bg-red-100 text-red-800"
-                          : account.role === "moderator"
-                          ? "bg-yellow-100 text-yellow-800"
-                          : account.role === "user"
-                          ? "bg-green-100 text-green-800"
-                          : "bg-blue-100 text-blue-800"
-                      }`}
-                    >
-                      {account.roles[0]?.name}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <div className="flex justify-end gap-2">
-                      <button
-                        onClick={() => handleEditAccount(account)}
-                        className="text-indigo-600 hover:text-indigo-900"
-                        title="Edit Account"
+              currentAccounts
+                .filter(
+                  (account) =>
+                    `${account.profile?.first_name || ""} ${account.profile?.last_name || ""}`
+                      .toLowerCase()
+                      .includes(searchTerm.toLowerCase()) ||
+                    (account.email || "")
+                      .toLowerCase()
+                      .includes(searchTerm.toLowerCase())
+                )
+                .sort((a, b) => {
+                  const nameA = `${a.profile?.first_name || ""} ${a.profile?.last_name || ""}`.toLowerCase();
+                  const nameB = `${b.profile?.first_name || ""} ${b.profile?.last_name || ""}`.toLowerCase();
+                  if (nameA < nameB) return sortDirection === "asc" ? -1 : 1;
+                  if (nameA > nameB) return sortDirection === "asc" ? 1 : -1;
+                  return 0;
+                })
+                .map((account) => (
+                  <tr key={account.id}>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      {account.id}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {account.profile?.first_name} {account.profile?.last_name}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {account.email}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      <span
+                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full capitalize ${
+                          account.roles?.[0]?.name === "admin"
+                            ? "bg-red-100 text-red-800"
+                            : account.roles?.[0]?.name === "moderator"
+                            ? "bg-yellow-100 text-yellow-800"
+                            : account.roles?.[0]?.name === "user"
+                            ? "bg-green-100 text-green-800"
+                            : "bg-blue-100 text-blue-800"
+                        }`}
                       >
-                        <FaEdit />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteAccount(account)}
-                        className="text-red-600 hover:text-red-900"
-                        title="Delete Account"
-                      >
-                        <FaTrash />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
+                        {account.roles?.[0]?.name}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <div className="flex justify-end gap-2">
+                        <button
+                          onClick={() => handleEditAccount(account)}
+                          className="text-indigo-600 hover:text-indigo-900"
+                          title="Edit Account"
+                        >
+                          <FaEdit />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteAccount(account)}
+                          className="text-red-600 hover:text-red-900"
+                          title="Delete Account"
+                        >
+                          <FaTrash />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
             ) : (
               <tr>
                 <td
@@ -259,6 +352,24 @@ function AdminPanel() {
         )}
       </div>
 
+      <AccountModal
+        isOpen={showAccountModal}
+        onClose={handleCloseAccountModal}
+        onSave={handleSaveAccount}
+        currentAccount={currentAccount}
+        isEdit={isEdit}
+        setCurrentAccount={setCurrentAccount}
+        roles={["admin", "moderator", "user"]}
+      />
+
+      <DeleteStoreConfirmationModal
+        isOpen={showDeleteModal}
+        onClose={handleCloseDeleteModal}
+        onConfirm={handleConfirmDelete}
+        itemName={accountToDeleteName}
+      />
+
+      <ToastContainer />
       <Outlet />
     </div>
   );

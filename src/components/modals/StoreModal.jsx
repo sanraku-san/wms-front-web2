@@ -11,7 +11,7 @@ const StoreModal = ({
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-black/30 backdrop-blur-md flex items-center justify-center p-4 z-50">
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-md flex items-center justify-center p-4 z-50 h-full">
             <div className="bg-white rounded-lg shadow-lg max-w-md w-full p-6">
                 <h3 className="text-lg font-medium text-gray-900 mb-4">
                     {isEdit ? "Edit Store" : "Add Store"}

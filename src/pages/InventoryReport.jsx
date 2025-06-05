@@ -131,7 +131,7 @@ const VarianceReportPage = () => {
             <thead className="bg-gray-200">
               <tr>
                 {[
-                  "ID",
+                  "Report ID",
                   "Store",
                   "Start Date",
                   "End Date",
