@@ -43,7 +43,7 @@ function FilterProductsModal({ isOpen, onClose, onApplyFilter, currentFilters })
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center p-4 z-50">
+    <div className="fixed inset-0 bg-black/30 backdrop-blur-md overflow-x-auto flex justify-center items-center p-4 z-50">
       <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
         <h2 className="text-2xl font-semibold mb-4 text-gray-800">Filter Products by Price</h2>
         <form onSubmit={handleSubmit}>
@@ -126,7 +126,7 @@ function SortProductsModal({ isOpen, onClose, onApplySort, currentSort }) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center p-4 z-50">
+    <div className="fixed inset-0 bg-black/30 backdrop-blur-md flex justify-center items-center p-4 z-50">
       <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
         <h2 className="text-2xl font-semibold mb-4 text-gray-800">Sort Products</h2>
         <form onSubmit={handleSubmit}>
