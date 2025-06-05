@@ -8,200 +8,18 @@ import {
   FaFilter,
   FaSortAmountDown,
   FaSortAmountUp,
-  FaDollarSign, 
-  FaSortAlphaDown, 
+  FaDollarSign,
+  FaSortAlphaDown,
   FaSortAlphaUp,
 } from "react-icons/fa";
 import withAuth from "../hoc/withAuth";
 import { getProducts, deleteProduct, editProduct } from "../api/products";
 import { getUser } from "../api/auth";
-import AddProductModal from "../components/modals/AddProductModal"; 
-import EditProductModal from "../components/modals/EditProductModal"; 
+import AddProductModal from "../components/modals/AddProductModal";
+import EditProductModal from "../components/modals/EditProductModal";
+import DeleteProductModal from "../components/modals/deleteProductModal";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
-function FilterProductsModal({ isOpen, onClose, onApplyFilter, currentFilters }) {
-  const [startPrice, setStartPrice] = useState('');
-  const [endPrice, setEndPrice] = useState('');
-
-  useEffect(() => {
-    if (isOpen) {
-      setStartPrice(currentFilters.startPrice !== null ? currentFilters.startPrice : '');
-      setEndPrice(currentFilters.endPrice !== null ? currentFilters.endPrice : '');
-    }
-  }, [isOpen, currentFilters]);
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onApplyFilter({ 
-      startPrice: startPrice !== '' ? parseFloat(startPrice) : null, 
-      endPrice: endPrice !== '' ? parseFloat(endPrice) : null 
-    });
-    onClose();
-  };
-
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 bg-black/30 backdrop-blur-md overflow-x-auto flex justify-center items-center p-4 z-50">
-      <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
-        <h2 className="text-2xl font-semibold mb-4 text-gray-800">Filter Products by Price</h2>
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label htmlFor="startPrice" className="block text-sm font-medium text-gray-700 mb-2">
-              Start Price
-            </label>
-            <div className="relative">
-              <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">
-                <FaDollarSign />
-              </span>
-              <input
-                type="number"
-                id="startPrice"
-                value={startPrice}
-                onChange={(e) => setStartPrice(e.target.value)}
-                className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
-                placeholder="e.g., 10.00"
-                step="0.01"
-              />
-            </div>
-          </div>
-          <div className="mb-6">
-            <label htmlFor="endPrice" className="block text-sm font-medium text-gray-700 mb-2">
-              End Price
-            </label>
-            <div className="relative">
-              <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">
-                <FaDollarSign />
-              </span>
-              <input
-                type="number"
-                id="endPrice"
-                value={endPrice}
-                onChange={(e) => setEndPrice(e.target.value)}
-                className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
-                placeholder="e.g., 100.00"
-                step="0.01"
-              />
-            </div>
-          </div>
-          <div className="flex justify-end gap-3">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
-            >
-              Apply Filter
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-}
-
-function SortProductsModal({ isOpen, onClose, onApplySort, currentSort }) {
-  const [sortBy, setSortBy] = useState('name');
-  const [sortOrder, setSortOrder] = useState('asc');
-
-  useEffect(() => {
-    if (isOpen) {
-      setSortBy(currentSort.sortBy || 'name');
-      setSortOrder(currentSort.sortOrder || 'asc');
-    }
-  }, [isOpen, currentSort]);
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onApplySort({ sortBy, sortOrder });
-    onClose();
-  };
-
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 bg-black/30 backdrop-blur-md flex justify-center items-center p-4 z-50">
-      <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
-        <h2 className="text-2xl font-semibold mb-4 text-gray-800">Sort Products</h2>
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label htmlFor="sortBy" className="block text-sm font-medium text-gray-700 mb-2">
-              Sort By
-            </label>
-            <select
-              id="sortBy"
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
-            >
-              <option value="name">Product Name</option>
-              <option value="price">Price</option>
-              <option value="stock">Stock</option>
-              <option value="flawed">Defects</option>
-              <option value="category">Category</option>
-              <option value="createdAt">Created At</option>
-              <option value="updatedAt">Updated At</option>
-            </select>
-          </div>
-          <div className="mb-6">
-            <label htmlFor="sortOrder" className="block text-sm font-medium text-gray-700 mb-2">
-              Order
-            </label>
-            <div className="flex gap-4">
-              <label className="inline-flex items-center">
-                <input
-                  type="radio"
-                  name="sortOrder"
-                  value="asc"
-                  checked={sortOrder === 'asc'}
-                  onChange={() => setSortOrder('asc')}
-                  className="form-radio text-indigo-600"
-                />
-                <span className="ml-2 text-gray-700 flex items-center">
-                  <FaSortAlphaUp className="mr-1" /> Ascending
-                </span>
-              </label>
-              <label className="inline-flex items-center">
-                <input
-                  type="radio"
-                  name="sortOrder"
-                  value="desc"
-                  checked={sortOrder === 'desc'}
-                  onChange={() => setSortOrder('desc')}
-                  className="form-radio text-indigo-600"
-                />
-                <span className="ml-2 text-gray-700 flex items-center">
-                  <FaSortAlphaDown className="mr-1" /> Descending
-                </span>
-              </label>
-            </div>
-          </div>
-          <div className="flex justify-end gap-3">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
-            >
-              Apply Sort
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-}
 
 function Inventory() {
   const [products, setProducts] = useState([]);
@@ -209,14 +27,17 @@ function Inventory() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
-  const [isSortModalOpen, setIsSortModalOpen] = useState(false);     
+  const [isSortModalOpen, setIsSortModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
-  const [currentUserRole, setCurrentUserRole] = useState(null); 
+  const [currentUserRole, setCurrentUserRole] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10; 
-  const [searchTerm, setSearchTerm] = useState(""); 
-  const [filterCriteria, setFilterCriteria] = useState({ startPrice: null, endPrice: null }); 
+  const itemsPerPage = 10;
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterCriteria, setFilterCriteria] = useState({ startPrice: null, endPrice: null });
   const [sortCriteria, setSortCriteria] = useState({ sortBy: 'name', sortOrder: 'asc' });
+
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [productToDelete, setProductToDelete] = useState(null);
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -229,12 +50,9 @@ function Inventory() {
           if (userData && userData.data && userData.data.roles && userData.data.roles.length > 0) {
             setCurrentUserRole(userData.data.roles[0].name);
           } else {
-            console.warn("User data received but no role found in userData.data.roles[0].name. Defaulting to 'viewer'.", userData);
             setCurrentUserRole('viewer');
           }
         } catch (error) {
-          console.error("Error fetching user role:", error);
-          toast.error("Failed to load user permissions.");
           setCurrentUserRole('viewer');
         }
       } else {
@@ -246,8 +64,7 @@ function Inventory() {
           setProducts(res.data.data);
           setLoading(false);
         })
-        .catch((error) => {
-          console.error("Error fetching products:", error);
+        .catch(() => {
           toast.error("Failed to fetch products.");
           setLoading(false);
         });
@@ -267,19 +84,30 @@ function Inventory() {
     setIsEditModalOpen(true);
   };
 
-  const handleDeleteProduct = async (productId) => {
-    if (window.confirm("Are you sure you want to delete this product?")) {
-      try {
-        await deleteProduct(productId);
-        setProducts((prevProducts) =>
-          prevProducts.filter((p) => p.id !== productId)
-        );
-        toast.success("Product deleted successfully!");
-      } catch (error) {
-        console.error("Error deleting product:", error);
-        toast.error("Failed to delete product.");
-      }
+  const handleDeleteProduct = (productId) => {
+    const product = products.find((p) => p.id === productId);
+    setProductToDelete(product);
+    setShowDeleteModal(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!productToDelete) return;
+    try {
+      await deleteProduct(productToDelete.id);
+      setProducts((prevProducts) =>
+        prevProducts.filter((p) => p.id !== productToDelete.id)
+      );
+      toast.success("Product deleted successfully!");
+    } catch (error) {
+      toast.error("Failed to delete product.");
     }
+    setShowDeleteModal(false);
+    setProductToDelete(null);
+  };
+
+  const handleCloseDeleteModal = () => {
+    setShowDeleteModal(false);
+    setProductToDelete(null);
   };
 
   const handleShowImage = (imagePath) => {
@@ -301,19 +129,18 @@ function Inventory() {
       setIsEditModalOpen(false);
       setEditingProduct(null);
     } catch (error) {
-      console.error("Error updating product:", error);
       toast.error("Failed to update product.");
     }
   };
 
   const handleApplyFilter = (filters) => {
     setFilterCriteria(filters);
-    setCurrentPage(1); 
+    setCurrentPage(1);
   };
 
   const handleApplySort = (sort) => {
     setSortCriteria(sort);
-    setCurrentPage(1); 
+    setCurrentPage(1);
   };
 
   const isViewer = currentUserRole === 'viewer';
@@ -322,7 +149,7 @@ function Inventory() {
     let result = [...products];
 
     if (searchTerm) {
-      result = result.filter(product => 
+      result = result.filter(product =>
         product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         product.sku.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (product.description && product.description.toLowerCase().includes(searchTerm.toLowerCase()))
@@ -341,22 +168,21 @@ function Inventory() {
       const bValue = b[sortCriteria.sortBy];
 
       if (typeof aValue === 'string' && typeof bValue === 'string') {
-        return sortCriteria.sortOrder === 'asc' 
-          ? aValue.localeCompare(bValue) 
+        return sortCriteria.sortOrder === 'asc'
+          ? aValue.localeCompare(bValue)
           : bValue.localeCompare(aValue);
       } else {
         const numA = typeof aValue === 'number' ? aValue : -Infinity;
         const numB = typeof bValue === 'number' ? bValue : -Infinity;
-        
-        return sortCriteria.sortOrder === 'asc' 
-          ? numA - numB 
+
+        return sortCriteria.sortOrder === 'asc'
+          ? numA - numB
           : numB - numA;
       }
     });
 
     return result;
   }, [products, searchTerm, filterCriteria, sortCriteria]);
-
 
   const indexOfLastProduct = currentPage * itemsPerPage;
   const indexOfFirstProduct = indexOfLastProduct - itemsPerPage;
@@ -378,19 +204,19 @@ function Inventory() {
               value={searchTerm}
               onChange={(e) => {
                 setSearchTerm(e.target.value);
-                setCurrentPage(1); 
+                setCurrentPage(1);
               }}
             />
           </div>
           <div className="flex gap-2">
-            <button 
-              onClick={() => setIsFilterModalOpen(true)} 
+            <button
+              onClick={() => setIsFilterModalOpen(true)}
               className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-2"
             >
               <FaFilter /> Filters
             </button>
             <button
-              onClick={() => setIsSortModalOpen(true)} 
+              onClick={() => setIsSortModalOpen(true)}
               className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-2"
             >
               {sortCriteria.sortOrder === "asc" ? <FaSortAmountUp /> : <FaSortAmountDown />}
@@ -398,7 +224,7 @@ function Inventory() {
             </button>
             {!isViewer && (
               <button
-                onClick={() => setIsAddModalOpen(true)} 
+                onClick={() => setIsAddModalOpen(true)}
                 className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2 shadow-sm"
               >
                 <FaPlus /> Add New Product
@@ -431,7 +257,7 @@ function Inventory() {
                   </div>
                 </td>
               </tr>
-            ) : filteredAndSortedProducts.length === 0 ? ( 
+            ) : filteredAndSortedProducts.length === 0 ? (
               <tr>
                 <td colSpan={8}>
                   <div className="flex flex-col items-center justify-center h-64">
@@ -461,11 +287,11 @@ function Inventory() {
                       {product.stock === 0 ? "Out of Stock" : product.stock <= 50 ? "Low Stock" : "In Stock"}
                     </span>
                   </td>
-                  {!isViewer && ( 
+                  {!isViewer && (
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex justify-end gap-2">
                         <button
-                          onClick={() => handleEditProduct(product)} 
+                          onClick={() => handleEditProduct(product)}
                           className="text-indigo-600 hover:text-indigo-900"
                           title="Edit product"
                         >
@@ -529,18 +355,15 @@ function Inventory() {
         product={editingProduct}
       />
 
-      <FilterProductsModal
-        isOpen={isFilterModalOpen}
-        onClose={() => setIsFilterModalOpen(false)}
-        onApplyFilter={handleApplyFilter}
-        currentFilters={filterCriteria}
-      />
+      {/* Placeholders for filter and sort modals */}
+      {/* <FilterProductsModal ... /> */}
+      {/* <SortProductsModal ... /> */}
 
-      <SortProductsModal
-        isOpen={isSortModalOpen}
-        onClose={() => setIsSortModalOpen(false)}
-        onApplySort={handleApplySort}
-        currentSort={sortCriteria}
+      <DeleteProductModal
+        isOpen={showDeleteModal}
+        onClose={handleCloseDeleteModal}
+        onConfirm={handleConfirmDelete}
+        product={productToDelete}
       />
 
       <Outlet />
