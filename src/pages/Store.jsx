@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
 import { getStores, addStores, deleteStore } from "../api/stores";
-import { getUser } from "../api/auth"; 
 import withAuth from "../hoc/withAuth";
 import StoreModal from "../components/modals/StoreModal";
 import DeleteStoreConfirmationModal from "../components/modals/DeleteStoreConfirmationModal";
@@ -11,7 +10,6 @@ import { FaSearch } from "react-icons/fa";
 function Store() {
   const [stores, setStores] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [currentUserRole, setCurrentUserRole] = useState(null);
 
   const [showStoreModal, setShowStoreModal] = useState(false);
   const [currentStore, setCurrentStore] = useState({
@@ -26,45 +24,18 @@ function Store() {
   const [storeToDeleteId, setStoreToDeleteId] = useState(null);
   const [storeToDeleteName, setStoreToDeleteName] = useState("");
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 6; 
-
   useEffect(() => {
-    const fetchInitialData = async () => {
-      setLoading(true);
-      const authToken = sessionStorage.getItem("authToken");
-
-      if (authToken) {
-        try {
-          const userData = await getUser(authToken);
-          if (userData && userData.data && userData.data.roles && userData.data.roles.length > 0) {
-            setCurrentUserRole(userData.data.roles[0].name);
-          } else {
-            console.warn("User data received but no role found. Defaulting to 'viewer'.", userData);
-            setCurrentUserRole('viewer');
-          }
-        } catch (error) {
-          console.error("Error fetching user role:", error);
-          toast.error("Failed to load user permissions.");
-          setCurrentUserRole('viewer'); 
-        }
-      } else {
-        setCurrentUserRole('viewer');
-      }
-
-      getStores()
-        .then((res) => {
-          setStores(res.data);
-          setLoading(false);
-        })
-        .catch((error) => {
-          console.error("Error fetching stores:", error);
-          toast.error("Failed to fetch stores.");
-          setLoading(false);
-        });
-    };
-
-    fetchInitialData();
+    setLoading(true);
+    getStores()
+      .then((res) => {
+        setStores(res.data.data);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error fetching stores:", error);
+        toast.error("Failed to fetch stores.");
+        setLoading(false);
+      });
   }, []);
 
   const handleAdd = () => {
@@ -166,16 +137,10 @@ function Store() {
         });
     }
   };
-  const isViewer = currentUserRole === 'viewer'; 
-
-  
-  const indexOfLastStore = currentPage * itemsPerPage;
-  const indexOfFirstStore = indexOfLastStore - itemsPerPage;
-  const currentStores = stores.slice(indexOfFirstStore, indexOfLastStore);
-  const totalPages = Math.ceil(stores.length / itemsPerPage);
 
   return (
     <div className="max-w-full mx-auto px-2 sm:px-4 lg:px-6 py-6 space-y-6 bg-gray-50 min-h-screen">
+      {/* Page Header */}
       <div className="bg-white rounded-xl shadow-md p-4 sm:p-6 border border-gray-100">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
@@ -184,14 +149,12 @@ function Store() {
             </h1>
             <p className="text-gray-500 mt-1">Manage your store locations</p>
           </div>
-          {!isViewer && (
-            <button
-              onClick={handleAdd}
-              className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2 shadow-sm"
-            >
-              + Add Store
-            </button>
-          )}
+          <button
+            onClick={handleAdd}
+            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2 shadow-sm"
+          >
+            + Add Store
+          </button>
         </div>
       </div>
 
@@ -211,79 +174,48 @@ function Store() {
             </p>
           </div>
         ) : (
-          <>
-            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-              {currentStores.map((store) => (
-                <div
-                  key={store.id}
-                  className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow"
-                >
-                  <div className="p-4">
-                    <h2 className="text-lg font-bold text-gray-800 mb-2">
-                      {store?.name}
-                    </h2>
-                    <div className="mb-3">
-                      <p className="text-sm font-medium text-gray-500 mb-1">
-                        Address
-                      </p>
-                      <p className="text-sm text-gray-700 break-words">
-                        {store.address}
-                      </p>
-                    </div>
-                    <div className="mb-2">
-                      <p className="text-sm font-medium text-gray-500">Contact</p>
-                      <p className="text-sm text-gray-700">
-                        {store.contact_number}
-                      </p>
-                    </div>
+          <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+            {stores.map((store) => (
+              <div
+                key={store.id}
+                className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow"
+              >
+                <div className="p-4">
+                  <h2 className="text-lg font-bold text-gray-800 mb-2">
+                    {store?.name}
+                  </h2>
+                  <div className="mb-3">
+                    <p className="text-sm font-medium text-gray-500 mb-1">
+                      Address
+                    </p>
+                    <p className="text-sm text-gray-700 break-words">
+                      {store.address}
+                    </p>
                   </div>
-                  {!isViewer && (
-                    <div className="border-t border-gray-100 px-4 py-3 bg-gray-50 flex gap-2">
-                      <button
-                        onClick={() => handleEditStore(store)}
-                        className="px-3 py-1.5 bg-indigo-100 text-indigo-700 rounded-lg hover:bg-indigo-200 transition font-medium text-sm flex-1"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDeleteClick(store.id, store.name)}
-                        className="px-3 py-1.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition font-medium text-sm flex-1"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  )}
+                  <div className="mb-2">
+                    <p className="text-sm font-medium text-gray-500">Contact</p>
+                    <p className="text-sm text-gray-700">
+                      {store.contact_number}
+                    </p>
+                  </div>
                 </div>
-              ))}
-            </div>
-            {totalPages > 1 && (
-              <div className="flex justify-center items-center py-4 gap-2">
-                <button
-                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                  disabled={currentPage === 1}
-                  className={`px-3 py-1 rounded-lg border ${currentPage === 1 ? 'bg-gray-200 text-gray-400' : 'bg-white text-gray-700 hover:bg-gray-100'}`}
-                >
-                  Previous
-                </button>
-                {Array.from({ length: totalPages }, (_, i) => (
+                <div className="border-t border-gray-100 px-4 py-3 bg-gray-50 flex gap-2">
                   <button
-                    key={i + 1}
-                    onClick={() => setCurrentPage(i + 1)}
-                    className={`px-3 py-1 rounded-lg border ${currentPage === i + 1 ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'}`}
+                    onClick={() => handleEditStore(store)}
+                    className="px-3 py-1.5 bg-indigo-100 text-indigo-700 rounded-lg hover:bg-indigo-200 transition font-medium text-sm flex-1"
                   >
-                    {i + 1}
+                    Edit
                   </button>
-                ))}
-                <button
-                  onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                  disabled={currentPage === totalPages}
-                  className={`px-3 py-1 rounded-lg border ${currentPage === totalPages ? 'bg-gray-200 text-gray-400' : 'bg-white text-gray-700 hover:bg-gray-100'}`}
-                >
-                  Next
-                </button>
+                  <button
+                    onClick={() => handleDeleteClick(store.id, store.name)}
+                    className="px-3 py-1.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition font-medium text-sm flex-1"
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
-            )}
-          </>
+            ))}
+          </div>
         )}
       </div>
 
